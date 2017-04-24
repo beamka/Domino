@@ -30,22 +30,25 @@ public class ResultComb extends HttpServlet {
             throws ServletException, IOException {
         System.out.println("Start servlet ResultComb doGet");
         response.setContentType("text/html;charset=utf-8");
-        List<Bone> bones = (List<Bone>) sContext.getAttribute("bones");
-        System.out.println("bones" + bones);
-        ArrayList<ArrayList<Bone>> allComb = dominoService.getComb(bones);
-        System.out.println("allComb" + allComb);
+        List<Bone> bones = (List<Bone>) sContext.getAttribute("setBones");
+        System.out.println("Bones" + bones);
+        ArrayList<ArrayList<Bone>> allSequences = dominoService.getAllSequences(bones);
+        System.out.println("allComb" + allSequences);
         String message;
         String combination = "";
         if ("max".equalsIgnoreCase(request.getParameter("type"))) {
-            ArrayList<Bone>  maxLenght = dominoService.getMaxLenghtComb(allComb);
-            System.out.println("maxLenght" + maxLenght);
-            combination = maxLenght.toString();
+            ArrayList<Bone>  maxSequences = dominoService.getMaxLenghtComb(allSequences);
+            dominoService.insertComb(maxSequences,(Long)sContext.getAttribute("id_set"));
+
+            System.out.println("maxSequences" + maxSequences);
+            combination = maxSequences.toString();
             System.out.println("combination" + combination);
-            message = "Max lenght of combination is " + maxLenght.size() + " bones:";
+            message = "Max lenght of sequences is " + maxSequences.size() + " bones:";
 
         } else { //all combination
             int i = 0;
-            for (ArrayList<Bone> oneComb : allComb) {
+            for (ArrayList<Bone> oneComb : allSequences) {
+                dominoService.insertComb(oneComb,(Long)sContext.getAttribute("id_set"));
                 i++;
                 combination = combination + "№" + i + " = " + oneComb.toString() + "<br>";
             }
@@ -53,8 +56,22 @@ public class ResultComb extends HttpServlet {
             System.out.println("message" + message);
             System.out.println("combination" + combination);
         }
+
+        request.setAttribute("current_set", bones);
         request.setAttribute("result", combination);
         request.setAttribute("message", message);
+        request.getRequestDispatcher("Result.jsp").forward(request, response);
+    }
+
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        System.out.println("Start servlet ResultComb doPost");
+        response.setContentType("text/html;charset=utf-8");
+        List<Bone> bones = (List<Bone>)sContext.getAttribute("setBones");
+        Long id_set = dominoService.insertSet(bones);
+        sContext.setAttribute("id_set", id_set);
+        request.setAttribute("current_set", bones.toString());
         request.getRequestDispatcher("Result.jsp").forward(request, response);
     }
 }

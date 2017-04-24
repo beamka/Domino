@@ -14,6 +14,10 @@ public class Bone {
         this.num2 = num2;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public int getNum1() {
         return num1;
     }

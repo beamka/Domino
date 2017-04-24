@@ -9,6 +9,7 @@
 </head>
 <body>
 <a href="/index.html">Home page</a>
+<p><b>Current set: <c:out value="${current_set}" /></b></p>
 <form action="/getComb" method="get" >
     <p><input type="radio" name="type" value="max" checked> Show only max lenght combination</p>
     <p><input type="radio" name="type" value="all" > Show all combinations </p>

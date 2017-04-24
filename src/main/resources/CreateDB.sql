@@ -12,6 +12,23 @@ CREATE TABLE IF NOT EXISTS `domino`.`bones` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
+CREATE TABLE IF NOT EXISTS `domino`.`sets` (
+  `id_set` BIGINT(20) NOT NULL,
+  `set_bon` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id_set`)
+)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+CREATE TABLE IF NOT EXISTS `domino`.`combs` (
+  `id_comb` BIGINT(20) NOT NULL,
+  `comb` VARCHAR(255) NOT NULL,
+  `id_set` BIGINT(20) NOT NULL,
+  PRIMARY KEY (`id_comb`)
+)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
 --
 
 INSERT INTO `users` (firstName, lastName, birthday, phone, email, country, city, region) VALUES('test1Name', 'last1Name', '2017-01-01', '0777776611', 'test1@mail.ua', 'country1', 'city1', 'region1');
