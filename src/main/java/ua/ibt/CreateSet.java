@@ -30,7 +30,6 @@ public class CreateSet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("Start servlet CreateSet doGet");
         response.setContentType("text/html;charset=utf-8");
         String message;
         List<Bone> bones = new ArrayList<>();
@@ -56,12 +55,13 @@ public class CreateSet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("Start servlet CreateSet doPost");
         response.setContentType("text/html;charset=utf-8");
         List<Bone> bones = (List<Bone>)sContext.getAttribute("setBones");
-        Long id_set = dominoService.insertSet(bones);
-        sContext.setAttribute("id_set", id_set);
-        request.setAttribute("current_set", bones.toString());
+        if(bones != null) {
+            Long id_set = dominoService.insertSet(bones);
+            sContext.setAttribute("id_set", id_set);
+            request.setAttribute("current_set", bones.toString());
+        }
         request.getRequestDispatcher("Result.jsp").forward(request, response);
     }
 }

@@ -1,9 +1,9 @@
 package ua.ibt;
 
 /**
- * Created by IRINA on 22.04.2017.
+ * •	Created by IRINA on 22.04.2017.
  */
-public class Bone {
+public class Bone implements Cloneable {
     private int id;
     private int num1;
     private int num2;
@@ -12,6 +12,13 @@ public class Bone {
         this.id = id;
         this.num1 = num1;
         this.num2 = num2;
+    }
+
+    public Bone twistBone() {
+        int buf = this.num1;
+        this.num1 = this.num2;
+        this.num2 = buf;
+        return this;
     }
 
     public int getId() {
@@ -28,7 +35,7 @@ public class Bone {
 
     @Override
     public String toString() {
-        return "[" + num1 + ":" + num2 + "] ";
+        return "<" + num1 + ":" + num2 + ">";
     }
 
     @Override
@@ -37,8 +44,16 @@ public class Bone {
             return false;
         }
         Bone other = (Bone) object;
-        return this.id == other.id;
+        return this.num1 == other.num1 && this.num2 == other.num2;
     }
 
-
+    @Override
+    public Bone clone() {
+        try {
+            return (Bone) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new InternalError();
+        }
+    }
 }
+

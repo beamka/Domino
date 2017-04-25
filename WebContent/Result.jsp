@@ -11,8 +11,8 @@
 <a href="/index.html">Home page</a>
 <p><b>Current set: <c:out value="${current_set}" /></b></p>
 <form action="/getComb" method="get" >
-    <p><input type="radio" name="type" value="max" checked> Show only max lenght combination</p>
-    <p><input type="radio" name="type" value="all" > Show all combinations </p>
+    <p><input type="radio" name="type" value="max" checked> Show only max lenght sequence</p>
+    <p><input type="radio" name="type" value="all" > Show all sequences </p>
 
     <button type="submit">Show</button>
     <p><c:out value="${message}" /></p>
@@ -20,7 +20,8 @@
 </form>
 
 <form action="/getComb" method="post" >
-    <button type="submit">Show history</button>
+    <button type="submit">Show history</button><br>
+    <p>${history}</p>
 </form>
 
 <a href="/Create.jsp"><button type="button">Create new set</button></a>

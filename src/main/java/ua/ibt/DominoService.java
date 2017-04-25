@@ -4,10 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by IRINA on 23.04.2017.
@@ -64,7 +61,7 @@ public class DominoService {
         int array_arr_size;
 
         // Prepare list id a bones of random
-        //int max_count = (size + 1) * (size + 2) / 2;
+        // int max_count = (size + 1) * (size + 2) / 2;
         int max_count = allBones.size();
         array_arr_size = count < max_count ? count : max_count;
         while (array_arr_size > 0) {
@@ -116,76 +113,79 @@ public class DominoService {
      */
     public ArrayList<ArrayList<Bone>> getAllSequences(List<Bone> bones) {
         ArrayList<ArrayList<Bone>> result = new ArrayList<>();
-        result.add(new ArrayList<>());
-
         ArrayList<ArrayList<Bone>> allComb = getAllCombinationsOfBones(bones);
-        System.out.println("getAllCombinationsOfBones : ");
-        allComb.forEach(c -> System.out.println(" + " + c));
-        System.out.println("===========================");
 
         Iterator<ArrayList<Bone>> combinations = allComb.iterator();
         while (combinations.hasNext()) {
             List<Bone> combination = combinations.next();
             ArrayList<Bone> tempComb = new ArrayList<>();
             int step = 0; // 2 step
-            int pos_rev = 0;// 0:1 == num1:num2
             while (step < 2) {
-                tempComb.add(combination.get(0));
+                tempComb.add(combination.get(0).clone());
                 for (int j = 0; j < combination.size(); j++) {
-                    if (j + 1 < combination.size()) { // is next
-                        if (pos_rev == 0) {
-                            if (combination.get(j).getNum1() == combination.get(j + 1).getNum1()) {
-                                pos_rev = 1;
-                                tempComb.add(combination.get(j + 1));
-                            } else if (combination.get(j).getNum1() == combination.get(j + 1).getNum2()) {
-                                pos_rev = 0;
-                                tempComb.add(combination.get(j + 1));
-                            } else {
-                                break;
-                            }
-                        } else if (pos_rev == 1) {
-                            if (combination.get(j).getNum2() == combination.get(j + 1).getNum1()) {
-                                pos_rev = 1;
-                                tempComb.add(combination.get(j + 1));
-                            } else if (combination.get(j).getNum2() == combination.get(j + 1).getNum2()) {
-                                pos_rev = 0;
-                                tempComb.add(combination.get(j + 1));
-                            } else {
-                                break;
-                            }
+                    if (j + 1 < combination.size()) { // is next bone
+                        if (combination.get(j).getNum2() == combination.get(j + 1).getNum1()) {
+                            tempComb.add(combination.get(j + 1).clone());
+                        } else if (combination.get(j).getNum2() == combination.get(j + 1).getNum2()) {
+                            combination.set(j + 1, combination.get(j + 1).twistBone());
+                            tempComb.add(combination.get(j + 1).clone());
+                        } else {
+                            break;
                         }
                     }
                 }
-                pos_rev = 1;
-                step++;
-                if (tempComb.size() > 1) {
-                    boolean exist = isExist(result, tempComb);
-                    if (!exist) {
-                        // allComb.add(new ArrayList<>(tempComb));
+                if (!result.isEmpty()) {
+                    if (isExist(result, tempComb)) {
+                        for (int i = 0; i < result.size(); i++) {
+                            if (isCompare(result.get(i), tempComb))
+                                if (tempComb.size() > result.get(i).size())
+                                    result.set(i, tempComb);
+                        }
+                    } else
                         result.add(tempComb);
-                    }
+
+                } else { // There is a duplicate in the collection, check the length and write a longer
+                    result.add(tempComb);
                 }
+                step++;
                 tempComb = new ArrayList<>();
+                combination.set(0, combination.get(0).twistBone()); // twist the first bone
             }
         }
-        if (result.get(0).isEmpty())
-            result.remove(0);
         return result;
     }
 
-    private boolean isExist(ArrayList<ArrayList<Bone>> allComb, ArrayList<Bone> tempComb) {
+    /**
+     * Checks the collection for a duplicate
+     *
+     * @param allSequences  - all the sequences
+     * @param testSequences - test the sequence
+     * @return true - if the test sequence is found
+     */
+    private boolean isExist(ArrayList<ArrayList<Bone>> allSequences, ArrayList<Bone> testSequences) {
         boolean exist = true;
-        for (ArrayList<Bone> oneComb : allComb) {
-            boolean e = true;
-            if (oneComb.size() == tempComb.size()) {
-                for (int i = 0; i < oneComb.size(); i++) {
-                    if (!oneComb.get(i).equals(tempComb.get(i))) {
-                        e = false;
-                        break;
-                    }
-                }
-            } else e = false;
-            exist = e;
+        for (ArrayList<Bone> oneSequences : allSequences) {
+            exist = isCompare(oneSequences, testSequences);
+            if (exist)
+                return exist;
+        }
+        return exist;
+    }
+
+    /**
+     * Compare two sequences
+     *
+     * @param sequences1 - first sequences
+     * @param sequences2 - second sequence
+     * @return true - if the sequence compare is true
+     */
+    private boolean isCompare(ArrayList<Bone> sequences1, ArrayList<Bone> sequences2) {
+        boolean exist = true;
+        for (int i = 0; i < (sequences2.size() < sequences1.size() ? sequences2.size() : sequences1.size()); i++) {
+            if (!sequences1.get(i).equals(sequences2.get(i))) {
+                exist = false;
+                break;
+            }
         }
         return exist;
     }
@@ -200,172 +200,81 @@ public class DominoService {
         return maxLenght;
     }
 
-    public Long insertSet(List<Bone> set){
+    /**
+     * Save set of bones to the data base
+     *
+     * @param set - list of set of bones
+     * @return ID of set of bones to the data base
+     */
+    public Long insertSet(List<Bone> set) {
         Long id = randomiD();
         try {
-            conn.createStatement().executeUpdate("INSERT INTO sets (id_set,set_bon) VALUES ("+id+",'"+set.toString()+"')");
+            conn.createStatement().executeUpdate("INSERT INTO sets (id_set,set_bon) VALUES (" + id + ",'" + set.toString() + "')");
+            return id;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Access error:" + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Save all sequences to the data base
+     *
+     * @param comb   - list of sequences
+     * @param id_set - id of the set of bones to the data base
+     * @return list of sequences
+     */
+    public boolean insertComb(List<Bone> comb, Long id_set) {
+        Long id = randomiD();
+        try {
+            conn.createStatement().executeUpdate("INSERT INTO combs (id_comb,comb,id_set) VALUES (" + id + ",'" + comb.toString() + "'," + id_set + ")");
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Access error:" + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get all sets and sequences from the data base
+     *
+     * @return list of data
+     */
+    public List<Map<String, Object>> showHistory() {
+        Statement stmt, stmt2;
+        ResultSet rs1, rs2;
+        List<Map<String, Object>> result = new ArrayList<>();
+        try {
+            stmt = conn.createStatement();
+            stmt2 = conn.createStatement();
+            rs1 = stmt.executeQuery("SELECT id_set, set_bon FROM sets");
+            while (rs1.next()) {
+                Map<String, Object> row = new HashMap<String, Object>();
+                row.put("set", rs1.getString("set_bon"));
+                Long id_set = rs1.getLong("id_set");
+                rs2 = stmt2.executeQuery("SELECT comb FROM combs WHERE id_set = " + id_set);
+                List<String> comb = new ArrayList<>();
+                while (rs2.next()) {
+                    comb.add(rs2.getString("comb"));
+                }
+                row.put("comb", comb);
+                result.add(row);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Access error:" + e.getMessage());
         }
-        return id;
+        return result;
     }
 
-    public void insertComb(List<Bone> comb, Long id_set){
-        Long id = randomiD();
-        try {
-            conn.createStatement().executeUpdate("INSERT INTO combs (id_comb,comb,id_set) VALUES ("+id+",'"+comb.toString()+"',"+id_set+")");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Access error:" + e.getMessage());
-        }
-    }
-
-    private static Long randomiD(){
+    /**
+     * Generat id for data base
+     *
+     * @return ID
+     */
+    private Long randomiD() {
         return Math.abs(UUID.randomUUID().getLeastSignificantBits());
     }
-    ////////////////////======================
-
-//    public List<Bone> getBones() {
-//        Statement stmt;
-//        ResultSet rs;
-//        List<Bone> outData = new ArrayList<>();
-//        try {
-//            stmt = conn.createStatement();
-//            rs = stmt.executeQuery("SELECT COUNT(*) as c from bones");
-//            rs.next();
-//            int resultCount = rs.getInt("c");
-//            int count = (int) (Math.random() * resultCount); //Random number of bones
-//            System.out.println("count:" + count);
-//            outData = executeGetBones(count);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            System.out.println("Access error:" + e.getMessage());
-//        }
-//        return outData;
-//    }
-
-//    public List<Bone> getBones(int count) {
-//        return executeGetBones(count);
-//    }
-//
-//    private List<Bone> executeGetBones(int count) {
-//        List<Bone> outData = new ArrayList<>();
-//        Statement stmt;
-//        ResultSet rs;
-//        int array[];
-//        try {
-//            stmt = conn.createStatement();
-//
-//            // -- Prepeare array of rundom id a bones --
-//            rs = stmt.executeQuery("SELECT COUNT(*) as c from bones");
-//            rs.next();
-//            int resultCount = rs.getInt("c");
-//            if (count < resultCount) {
-//                array = new int[count];
-//            } else {
-//                array = new int[resultCount];
-//            }
-//            for (int i = 0; i < array.length; i++) {
-//                int num = 0;
-//                boolean f = true;
-//                while (f) {
-//                    num = (int) (Math.random() * resultCount);
-//                    f = false;
-//                    for (int j : array) {
-//                        if (j == num) f = true;
-//                    }
-//                }
-//                array[i] = num;
-//            }
-//            // -- geting a bones from array id --
-//            String query = "";
-//            for (int i : array) {
-//                query = query + "UNION SELECT id, num1, num2 from bones WHERE id =" + i + " ";
-//            }
-//            System.out.println("query:" + query);
-//            query = query.substring(6, query.length());//cuting off first "UNION"
-//            rs = stmt.executeQuery(query);
-//            while (rs.next()) {
-//                outData.add(new Bone(rs.getInt("id"), rs.getInt("num1"), rs.getInt("num2")));
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            System.out.println("Access error:" + e.getMessage());
-//        }
-//        return outData;
-//    }
-
-//    public ArrayList<ArrayList<Bone>> getComb(List<Bone> bones) {
-//        ArrayList<ArrayList<Bone>> result = new ArrayList<>();
-//        result.add(new ArrayList<>());
-//
-//        for (int i = 0; i < bones.size(); i++) {
-//            ArrayList<ArrayList<Bone>> current = new ArrayList<>();
-//            Iterator<ArrayList<Bone>> resultIter = result.iterator();
-//            while (resultIter.hasNext()) {
-//                ArrayList<Bone> l = resultIter.next();
-//                for (int j = 0; j < l.size() + 1; j++) {
-//                    l.add(j, bones.get(i));
-//                    ArrayList<Bone> temp = new ArrayList<>(l);
-//                    current.add(temp);
-//                    l.remove(j);
-//                }
-//            }
-//            result = new ArrayList<>(current);
-//        }
-//
-//        ArrayList<ArrayList<Bone>> allComb = new ArrayList<>();
-//        allComb.add(new ArrayList<>());
-//
-//        Iterator<ArrayList<Bone>> combinations = result.iterator();
-//        while (combinations.hasNext()) {
-//            List<Bone> combination = combinations.next();
-//            ArrayList<Bone> tempComb = new ArrayList<>();
-//            int step = 0; // 2 step
-//            int pos_rev = 0;// 0:1 == num1:num2
-//            while (step < 2) {
-//                tempComb.add(combination.get(0));
-//                for (int j = 0; j < combination.size(); j++) {
-//                    if (j + 1 < combination.size()) { // is next
-//                        if (pos_rev == 0) {
-//                            if (combination.get(j).getNum1() == combination.get(j + 1).getNum1()) {
-//                                pos_rev = 1;
-//                                tempComb.add(combination.get(j + 1));
-//                            } else if (combination.get(j).getNum1() == combination.get(j + 1).getNum2()) {
-//                                pos_rev = 0;
-//                                tempComb.add(combination.get(j + 1));
-//                            } else {
-//                                break;
-//                            }
-//                        } else if (pos_rev == 1) {
-//                            if (combination.get(j).getNum2() == combination.get(j + 1).getNum1()) {
-//                                pos_rev = 1;
-//                                tempComb.add(combination.get(j + 1));
-//                            } else if (combination.get(j).getNum2() == combination.get(j + 1).getNum2()) {
-//                                pos_rev = 0;
-//                                tempComb.add(combination.get(j + 1));
-//                            } else {
-//                                break;
-//                            }
-//                        }
-//                    }
-//                }
-//                pos_rev = 1;
-//                step++;
-//                if (tempComb.size() > 1) {
-//                    boolean exist = isExist(allComb, tempComb);
-//                    if (!exist) {
-//                        //allComb.add(new ArrayList<>(tempComb));
-//                        allComb.add(tempComb);
-//                    }
-//                }
-//                tempComb = new ArrayList<>();
-//            }
-//        }
-//        if (allComb.get(0).isEmpty())
-//            allComb.remove(0);
-//        return allComb;
-//    }
-
 }
