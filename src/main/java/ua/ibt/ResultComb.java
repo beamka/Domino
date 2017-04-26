@@ -36,7 +36,7 @@ public class ResultComb extends HttpServlet {
             String message;
             String combination = "";
             if ("max".equalsIgnoreCase(request.getParameter("type"))) {
-                ArrayList<Bone> maxSequences = dominoService.getMaxLenghtComb(allSequences);
+                ArrayList<Bone> maxSequences = dominoService.getMaxLengthComb(allSequences);
                 dominoService.insertComb(maxSequences, (Long) sContext.getAttribute("id_set"));
 
                 combination = maxSequences.toString();
@@ -66,7 +66,7 @@ public class ResultComb extends HttpServlet {
         List<Map<String, Object>> history =dominoService.showHistory();
         String result = "";
         for (Map<String, Object> row : history) {
-            result = result + " # " + (String)row.get("set") + " <br>";
+            result = result + " # " + row.get("set") + " <br>";
             List<String> combs = (List<String>)row.get("comb");
             for(String comb : combs){
                 result = result + "  ~~~ " + comb + "<br>";

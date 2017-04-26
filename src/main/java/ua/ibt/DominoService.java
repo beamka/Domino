@@ -135,13 +135,14 @@ public class DominoService {
                     }
                 }
                 if (!result.isEmpty()) {
-                    if (isExist(result, tempComb)) {
-                        for (int i = 0; i < result.size(); i++) {
-                            if (isCompare(result.get(i), tempComb))
-                                if (tempComb.size() > result.get(i).size())
-                                    result.set(i, tempComb);
+                    boolean isExist = false;
+                    for (int i = 0; i < result.size(); i++)
+                        if (isCompare(result.get(i), tempComb)) {
+                            if (tempComb.size() > result.get(i).size())
+                                result.set(i, tempComb);
+                            isExist = true;
                         }
-                    } else
+                    if (!isExist)
                         result.add(tempComb);
 
                 } else { // There is a duplicate in the collection, check the length and write a longer
@@ -153,23 +154,6 @@ public class DominoService {
             }
         }
         return result;
-    }
-
-    /**
-     * Checks the collection for a duplicate
-     *
-     * @param allSequences  - all the sequences
-     * @param testSequences - test the sequence
-     * @return true - if the test sequence is found
-     */
-    private boolean isExist(ArrayList<ArrayList<Bone>> allSequences, ArrayList<Bone> testSequences) {
-        boolean exist = true;
-        for (ArrayList<Bone> oneSequences : allSequences) {
-            exist = isCompare(oneSequences, testSequences);
-            if (exist)
-                return exist;
-        }
-        return exist;
     }
 
     /**
@@ -190,14 +174,14 @@ public class DominoService {
         return exist;
     }
 
-    public ArrayList<Bone> getMaxLenghtComb(ArrayList<ArrayList<Bone>> allComb) {
-        ArrayList<Bone> maxLenght = new ArrayList<>();
-        for (ArrayList<Bone> oneComb : allComb) {
-            if (maxLenght.size() < oneComb.size()) {
-                maxLenght = oneComb;
-            }
-        }
-        return maxLenght;
+    /**
+     * Get max length sequence
+     *
+     * @param allSequences - list of all sequences
+     * @return list of bones - max length sequence
+     */
+    public ArrayList<Bone> getMaxLengthComb(ArrayList<ArrayList<Bone>> allSequences) {
+        return allSequences.stream().max((s1, s2) -> ((Integer) s1.size()).compareTo(s2.size())).get();
     }
 
     /**

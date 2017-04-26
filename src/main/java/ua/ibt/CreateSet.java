@@ -22,9 +22,9 @@ public class CreateSet extends HttpServlet {
 
     public void init (ServletConfig config) throws ServletException
     {
-        sContext = config.getServletContext();
-        dominoService = new DominoService();
-        sContext.setAttribute("allBones", dominoService.createAllBones(size));
+            sContext = config.getServletContext();
+            dominoService = new DominoService();
+            sContext.setAttribute("allBones", dominoService.createAllBones(size));
     }
 
     @Override
