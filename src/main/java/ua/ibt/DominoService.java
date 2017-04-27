@@ -195,7 +195,7 @@ public class DominoService {
         try {
             conn.createStatement().executeUpdate("INSERT INTO sets (id_set,set_bon) VALUES (" + id + ",'" + set.toString() + "')");
             return id;
-        } catch (SQLException e) {
+        } catch (SQLException | NullPointerException e) {
             e.printStackTrace();
             System.out.println("Access error:" + e.getMessage());
             return null;

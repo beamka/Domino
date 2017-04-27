@@ -50,6 +50,15 @@
 
     <build>
         <finalName>web-app</finalName>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>${basedir}/src/main/resources/db.properties</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -80,9 +89,7 @@
                     <execution>
                         <id>clean-jar-artifacts</id>
                         <phase>install</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
+                        <goals><goal>clean</goal></goals>
                         <configuration>
                             <excludeDefaultDirectories>true</excludeDefaultDirectories>
                             <filesets>

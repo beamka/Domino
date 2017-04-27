@@ -1,6 +1,5 @@
 package ua.ibt;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
 import java.util.Properties;
@@ -27,7 +26,7 @@ public class ConnectJDBC {
 
             this.conn = DriverManager.getConnection(url, user, password);
             System.out.println("Successful connection.");
-        } catch (IOException | SQLException | ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Failed connection:" + e.getMessage());
         }

@@ -23,13 +23,13 @@ public class ResultComb extends HttpServlet {
     public void init (ServletConfig config) throws ServletException
     {
         sContext = config.getServletContext();
-        dominoService = new DominoService();
     }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=utf-8");
+        dominoService = new DominoService();
         List<Bone> bones = (List<Bone>) sContext.getAttribute("setBones");
         if(bones != null) {
             ArrayList<ArrayList<Bone>> allSequences = dominoService.getAllSequences(bones);
@@ -63,6 +63,7 @@ public class ResultComb extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=utf-8");
+        dominoService = new DominoService();
         List<Map<String, Object>> history =dominoService.showHistory();
         String result = "";
         for (Map<String, Object> row : history) {

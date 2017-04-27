@@ -20,29 +20,29 @@ public class CreateSet extends HttpServlet {
     private ServletContext sContext;
     private int size = 6;//max number of bone
 
-    public void init (ServletConfig config) throws ServletException
-    {
-            sContext = config.getServletContext();
-            dominoService = new DominoService();
-            sContext.setAttribute("allBones", dominoService.createAllBones(size));
+    public void init(ServletConfig config) throws ServletException {
+        sContext = config.getServletContext();
+        dominoService = new DominoService();
+        sContext.setAttribute("allBones", dominoService.createAllBones(size));
     }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=utf-8");
+        dominoService = new DominoService();
         String message;
         List<Bone> bones = new ArrayList<>();
-        if("set".equalsIgnoreCase(request.getParameter("type"))){
-            if (!"".equalsIgnoreCase(request.getParameter("count"))){
+        if ("set".equalsIgnoreCase(request.getParameter("type"))) {
+            if (!"".equalsIgnoreCase(request.getParameter("count"))) {
                 int count = Integer.parseInt(request.getParameter("count"));
-                bones = dominoService.getListBones(count,(List<Bone>)sContext.getAttribute("allBones"));
+                bones = dominoService.getListBones(count, (List<Bone>) sContext.getAttribute("allBones"));
                 message = "Set with " + count + " bones:";
             } else {
                 message = "Enter number!";
             }
-        } else{
-            bones = dominoService.getListBones(dominoService.getRandomCount(size),(List<Bone>)sContext.getAttribute("allBones"));
+        } else {
+            bones = dominoService.getListBones(dominoService.getRandomCount(size), (List<Bone>) sContext.getAttribute("allBones"));
             message = "Set with random bones (result = " + bones.size() + " ):";
         }
         sContext.setAttribute("setBones", bones);
@@ -56,11 +56,16 @@ public class CreateSet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=utf-8");
-        List<Bone> bones = (List<Bone>)sContext.getAttribute("setBones");
-        if(bones != null) {
+        dominoService = new DominoService();
+        List<Bone> bones = (List<Bone>) sContext.getAttribute("setBones");
+        if (bones != null) {
             Long id_set = dominoService.insertSet(bones);
-            sContext.setAttribute("id_set", id_set);
-            request.setAttribute("current_set", bones.toString());
+            if (id_set != null) {
+                sContext.setAttribute("id_set", id_set);
+                request.setAttribute("current_set", bones.toString());
+            }else{
+                request.setAttribute("result", "Failed connection to db");
+            }
         }
         request.getRequestDispatcher("Result.jsp").forward(request, response);
     }
